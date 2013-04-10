@@ -1,0 +1,18 @@
+; set the database information according to PHP PDO settings
+[database]
+dsn="mysql:host=127.0.0.1;dbname=sr"
+;user="user"
+;pass="s3cr3t"
+
+[export]
+; choose the directory to write the exported data to
+dir="/PATH/TO/DIR"
+; set the JANUS hostname to directly link go to the entry in 
+; JANUS for your installation
+janusHost="https://janus.example.org"
+
+; choose one 'state' in JANUS to export, if you select none
+; all entries will be exported
+[filter]
+;state="prodaccepted"
+;state="testaccepted"
