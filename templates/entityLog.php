@@ -27,7 +27,7 @@
 
 <ul>
 <?php foreach (array_keys($data) as $set) { ?>
-    <li><a href="# <?php echo $set; ?>"><?php echo $set; ?></a></li>
+    <li><a href="#<?php echo $set; ?>"><?php echo $set; ?></a></li>
 <?php } ?>
 </ul>
 
