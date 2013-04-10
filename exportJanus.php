@@ -442,6 +442,9 @@ function filterContact(array $contact, array &$errorMessage)
     if (array_key_exists("surName", $contact) && !empty($contact['surName'])) {
         $c['surName'] = $contact['surName'];
     }
+    if (array_key_exists("telephoneNumber", $contact) && !empty($contact['telephoneNumber'])) {
+        $c['telephoneNumber'] = $contact['telephoneNumber'];
+    }
 
     return $c;
 }
