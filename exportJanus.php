@@ -250,10 +250,12 @@ function validateContacts(&$entities)
     foreach ($entities as $eid => $metadata) {
         if (array_key_exists("contacts", $metadata)) {
             foreach ($metadata['contacts'] as $k => $v) {
-                $filteredContact = filterContact($v);
+                $errorMessage = array();
+                $filteredContact = filterContact($v, $errorMessage);
                 if (FALSE !== $filteredContact) {
                     $entities[$eid]["contacts"][$k] = $filteredContact;
                 } else {
+                    _l($metadata, "WARNING", "invalid contact data " . $k . " (" . implode(", ", $errorMessage) . ")");
                     unset($entities[$eid]["contacts"][$k]);
                 }
             }
@@ -270,11 +272,12 @@ function validateEndpoints(&$entities)
         foreach ($endpointTypes as $type) {
             if (array_key_exists($type, $metadata)) {
                 foreach ($metadata[$type] as $k => $v) {
-                    $filteredEndpoint = filterEndpoint($v);
+                    $errorMessage = array();
+                    $filteredEndpoint = filterEndpoint($v, $errorMessage);
                     if (FALSE !== $filteredEndpoint) {
                         $entities[$eid][$type][$k] = $filteredEndpoint;
                     } else {
-                        _l($metadata, "WARNING", "invalid endpoint configuration");
+                        _l($metadata, "WARNING", "invalid endpoint configuration " . $k . " (" . implode(", ", $errorMessage) . ")");
                         unset($entities[$eid][$type][$k]);
                     }
                 }
@@ -408,19 +411,31 @@ function filterKeywords($keywords)
     return array_values(array_unique($keywordsArray));
 }
 
-function filterContact(array $contact)
+function filterContact(array $contact, array &$errorMessage)
 {
-    $validContactTypes = array ("technical", "administrative", "support");
+    $validContactTypes = array ("technical", "administrative", "support", "billing", "other");
     if (!array_key_exists("contactType", $contact)) {
+        array_push($errorMessage, "missing contactType");
+    } else {
+        if (!in_array($contact['contactType'], $validContactTypes)) {
+            array_push($errorMessage, "unsupported contactType");
+        }
+    }
+    if (array_key_exists("emailAddress", $contact)) {
+        if (FALSE === filter_var($contact['emailAddress'], FILTER_VALIDATE_EMAIL)) {
+            array_push($errorMessage, "invalid emailAddress");
+        }
+    }
+
+    if (0 !== count($errorMessage)) {
         return FALSE;
     }
-    if (!in_array($contact['contactType'], $validContactTypes)) {
-        return FALSE;
+
+    $c = array("contactType" => $contact['contactType']);
+
+    if (array_key_exists("emailAddress", $contact) && !empty($contact['emailAddress'])) {
+        $c['emailAddress'] = $contact['emailAddress'];
     }
-    if (!array_key_exists("emailAddress", $contact)) {
-        return FALSE;
-    }
-    $c = array("contactType" => $contact['contactType'], "emailAddress" => $contact['emailAddress']);
     if (array_key_exists("givenName", $contact) && !empty($contact['givenName'])) {
         $c['givenName'] = $contact['givenName'];
     }
@@ -431,18 +446,32 @@ function filterContact(array $contact)
     return $c;
 }
 
-function filterEndpoint(array $ep)
+function filterEndpoint(array $ep, array &$errorMessage)
 {
     // an ACS, SSO or SLO should have a "Binding" and a "Location" field
     if (!array_key_exists("Location", $ep)) {
-        return FALSE;
+        array_push($errorMessage, "Location field missing");
+    } else {
+        if (FALSE === filter_var($ep['Location'], FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
+            array_push($errorMessage, "invalid URL");
+        }
     }
+
     if (!array_key_exists("Binding", $ep)) {
+        array_push($errorMessage, "Binding field missing");
+    }
+
+    if (0 !== count($errorMessage)) {
         return FALSE;
     }
+
     $validatedEndpoint = array("Location" => $ep['Location'], "Binding" => $ep['Binding']);
+
     if (array_key_exists("Index", $ep) && !empty($ep['Index'])) {
         $validatedEndpoint['Index'] = $ep['Index'];
+    }
+    if (array_key_exists("index", $ep) && !empty($ep['index'])) {
+        $validatedEndpoint['index'] = $ep['index'];
     }
 
     return $validatedEndpoint;
