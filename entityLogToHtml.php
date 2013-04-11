@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set("Europe/Amsterdam");
+
 $config = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "config.ini", TRUE);
 
 // export
