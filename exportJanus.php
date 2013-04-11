@@ -560,10 +560,16 @@ function validateGeo($geoHints)
 
 function updateRedirectSign(&$entities)
 {
-    // FIXME: if this entity is an SP it should be renamed to 'validate.authnrequest' AND a certificate MUST be configured for this entry...
     foreach ($entities as $eid => $metadata) {
         if (isset($metadata['redirect.sign'])) {
-            $entities[$eid]['redirect.sign'] = $metadata['redirect.sign'] ? TRUE : FALSE;
+            if ("saml20-idp-remote" === $metadata['metadata-set']) {
+                // IdP
+                $entities[$eid]['redirect.sign'] = $metadata['redirect.sign'] ? TRUE : FALSE;
+            } else {
+                // SP
+                $entities[$eid]['validate.authnrequest'] = $metadata['redirect.sign'] ? TRUE : FALSE;
+                unset($entities[$eid]['redirect.sign']);
+            }
         }
     }
 }
