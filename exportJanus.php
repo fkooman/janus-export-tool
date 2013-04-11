@@ -157,6 +157,9 @@ checkOrganizationDisplayName($saml20_sp);
 
 removeSecrets($saml20_sp);
 
+updateRedirectSign($saml20_idp);
+updateRedirectSign($saml20_sp);
+
 if (NULL !== $requestedState) {
     filterState($saml20_idp, $requestedState);
     filterState($saml20_sp, $requestedState);
@@ -470,11 +473,11 @@ function filterEndpoint(array $ep, array &$errorMessage)
 
     $validatedEndpoint = array("Location" => $ep['Location'], "Binding" => $ep['Binding']);
 
-    if (array_key_exists("Index", $ep) && !empty($ep['Index'])) {
-        $validatedEndpoint['Index'] = $ep['Index'];
+    if (array_key_exists("Index", $ep) && !empty($ep['Index']) && is_numeric($ep['Index'])) {
+        $validatedEndpoint['Index'] = (int) $ep['Index'];
     }
-    if (array_key_exists("index", $ep) && !empty($ep['index'])) {
-        $validatedEndpoint['index'] = $ep['index'];
+    if (array_key_exists("index", $ep) && !empty($ep['index']) && is_numeric($ep['index'])) {
+        $validatedEndpoint['index'] = (int) $ep['index'];
     }
 
     return $validatedEndpoint;
@@ -551,6 +554,16 @@ function validateGeo($geoHints)
             $alt = trim($alt);
 
             return "geo:$lat,$lon,$alt";
+        }
+    }
+}
+
+function updateRedirectSign(&$entities)
+{
+    // FIXME: if this entity is an SP it should be renamed to 'validate.authnrequest' AND a certificate MUST be configured for this entry...
+    foreach ($entities as $eid => $metadata) {
+        if (isset($metadata['redirect.sign'])) {
+            $entities[$eid]['redirect.sign'] = $metadata['redirect.sign'] ? TRUE : FALSE;
         }
     }
 }

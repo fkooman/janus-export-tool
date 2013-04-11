@@ -16,6 +16,8 @@ if (NULL === $janusHost) {
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "entityLog.json");
 $data = json_decode($jsonData, TRUE);
 
+$dateTime = date("r");
+
 ob_start();
 require __DIR__ . DIRECTORY_SEPARATOR . "templates" . DIRECTORY_SEPARATOR . "entityLog.php";
 $output = ob_get_clean();

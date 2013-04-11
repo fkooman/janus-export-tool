@@ -19,11 +19,18 @@
     span.testaccepted {
         color: #888;
     }
+    div.timestamp {
+    float: right;
+    }
 </style>
 </head>
 <body>
 
 <h1>Entity Log</h1>
+
+<div class="timestamp">
+    <small>Generated at <em><?php echo $dateTime; ?></em></small>
+</div>
 
 <ul>
 <?php foreach (array_keys($data) as $set) { ?>
