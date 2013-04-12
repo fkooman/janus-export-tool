@@ -152,8 +152,8 @@ validateEndpoints($saml20_sp);
 checkName($saml20_idp);
 checkName($saml20_sp);
 
-checkOrganizationDisplayName($saml20_idp);
-checkOrganizationDisplayName($saml20_sp);
+verifyOrganization($saml20_idp);
+verifyOrganization($saml20_sp);
 
 removeSecrets($saml20_sp);
 
@@ -483,18 +483,6 @@ function filterEndpoint(array $ep, array &$errorMessage)
     return $validatedEndpoint;
 }
 
-function checkOrganizationDisplayName(&$entities)
-{
-    foreach ($entities as $eid => $metadata) {
-        if (array_key_exists("OrganizationDisplayName", $metadata) && is_array($metadata['OrganizationDisplayName']) && array_key_exists("en", $metadata["OrganizationDisplayName"]) && !empty($metadata["OrganizationDisplayName"]["en"])) {
-            // all is fine
-            continue;
-        } else {
-            _l($metadata, "WARNING", "no OrganizationDisplayName:en set");
-        }
-    }
-}
-
 function removeSecrets(&$entities)
 {
     foreach ($entities as $eid => $metadata) {
@@ -570,6 +558,28 @@ function updateRedirectSign(&$entities)
                 $entities[$eid]['validate.authnrequest'] = $metadata['redirect.sign'] ? TRUE : FALSE;
                 unset($entities[$eid]['redirect.sign']);
             }
+        }
+    }
+}
+
+function verifyOrganization(&$entities)
+{
+    // if any of OrganizationDisplayName, OrganizationName or OrganizationURL is
+    // set they MUST all be set
+    foreach ($entities as $eid => $metadata) {
+        $setCounter = 0;
+
+        if (isset($metadata['OrganizationDisplayName']['en']) || isset($metadata['OrganizationDisplayName']['nl'])) {
+            $setCounter++;
+        }
+        if (isset($metadata['OrganizationName']['en']) || isset($metadata['OrganizationName']['nl'])) {
+            $setCounter++;
+        }
+        if (isset($metadata['OrganizationURL']['en']) || isset($metadata['OrganizationURL']['nl'])) {
+            $setCounter++;
+        }
+        if (0 !== $setCounter && 3 !== $setCounter) {
+            _l($metadata, "WARNING", "required OrganizationDisplayName, OrganizationName or OrganizationURL is missing");
         }
     }
 }
