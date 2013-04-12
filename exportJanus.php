@@ -573,9 +573,8 @@ function verifyOrganization(&$entities)
         }
         if (!isset($metadata['OrganizationName']['en']) && !isset($metadata['OrganizationName']['nl'])) {
             _l($metadata, "WARNING", "missing OrganizationName");
-
         }
-        if (isset($metadata['OrganizationURL']['en']) && !isset($metadata['OrganizationURL']['nl'])) {
+        if (!isset($metadata['OrganizationURL']['en']) && !isset($metadata['OrganizationURL']['nl'])) {
             _l($metadata, "WARNING", "missing OrganizationURL");
         }
     }
