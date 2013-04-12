@@ -575,7 +575,7 @@ function verifyOrganization(&$entities)
             _l($metadata, "WARNING", "missing OrganizationName");
 
         }
-        if (isset($metadata['OrganizationURL']['en']) || isset($metadata['OrganizationURL']['nl'])) {
+        if (isset($metadata['OrganizationURL']['en']) && !isset($metadata['OrganizationURL']['nl'])) {
             _l($metadata, "WARNING", "missing OrganizationURL");
         }
     }
