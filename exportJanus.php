@@ -578,7 +578,8 @@ function verifyOrganization(&$entities)
         if (isset($metadata['OrganizationURL']['en']) || isset($metadata['OrganizationURL']['nl'])) {
             $setCounter++;
         }
-        if (0 !== $setCounter && 3 !== $setCounter) {
+        // FIXME: SAML spec says it should be 0 or 3 :)
+        if (3 !== $setCounter) {
             _l($metadata, "WARNING", "required OrganizationDisplayName, OrganizationName or OrganizationURL is missing");
         }
     }
