@@ -565,22 +565,18 @@ function updateRedirectSign(&$entities)
 function verifyOrganization(&$entities)
 {
     // if any of OrganizationDisplayName, OrganizationName or OrganizationURL is
-    // set they MUST all be set
-    foreach ($entities as $eid => $metadata) {
-        $setCounter = 0;
+    // set they MUST all be set, for now we require all to be set to not give warnings
 
-        if (isset($metadata['OrganizationDisplayName']['en']) || isset($metadata['OrganizationDisplayName']['nl'])) {
-            $setCounter++;
+    foreach ($entities as $eid => $metadata) {
+        if (!isset($metadata['OrganizationDisplayName']['en']) && !isset($metadata['OrganizationDisplayName']['nl'])) {
+            _l($metadata, "WARNING", "missing OrganizationDisplayName");
         }
-        if (isset($metadata['OrganizationName']['en']) || isset($metadata['OrganizationName']['nl'])) {
-            $setCounter++;
+        if (!isset($metadata['OrganizationName']['en']) && !isset($metadata['OrganizationName']['nl'])) {
+            _l($metadata, "WARNING", "missing OrganizationName");
+
         }
         if (isset($metadata['OrganizationURL']['en']) || isset($metadata['OrganizationURL']['nl'])) {
-            $setCounter++;
-        }
-        // FIXME: SAML spec says it should be 0 or 3 :)
-        if (3 !== $setCounter) {
-            _l($metadata, "WARNING", "required OrganizationDisplayName, OrganizationName or OrganizationURL is missing");
+            _l($metadata, "WARNING", "missing OrganizationURL");
         }
     }
 }
