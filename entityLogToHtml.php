@@ -18,6 +18,33 @@ if (NULL === $janusHost) {
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "entityLog.json");
 $data = json_decode($jsonData, TRUE);
 
+// sort the entries by state, and then entityId
+// the key is the entityId, the state is the attribute 'state';
+
+$prodAcceptedData = array();
+$testAcceptedData = array();
+
+foreach ($data as $set => $entries) {
+    $prodAccepted = array();
+    $testAccepted = array();
+
+    foreach ($entries as $eid => $metadata) {
+        if ("prodaccepted" === $metadata['state']) {
+            $prodAccepted[$eid] = $metadata;
+        }
+        if ("testaccepted" === $metadata['state']) {
+            $testAccepted[$eid] = $metadata;
+        }
+    }
+    ksort($prodAccepted);
+    $prodAcceptedData[$set] = $prodAccepted;
+    ksort($testAccepted);
+    $testAcceptedData[$set] = $testAccepted;
+}
+
+ksort($prodAcceptedData);
+ksort($testAcceptedData);
+
 $dateTime = date("r");
 
 ob_start();

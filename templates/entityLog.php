@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Configuration Log</title>
+<title>Janus Entity Log</title>
 <style>
     body {
         font-family: sans-serif;
@@ -26,20 +26,58 @@
 </head>
 <body>
 
-<h1>Entity Log</h1>
+<h1>Janus Entity Log</h1>
 
 <div class="timestamp">
     <small>Generated at <em><?php echo $dateTime; ?></em></small>
 </div>
 
 <ul>
-<?php foreach (array_keys($data) as $set) { ?>
-    <li><a href="#<?php echo $set; ?>"><?php echo $set; ?></a></li>
+<li>Production
+<ul>
+<?php foreach (array_keys($prodAcceptedData) as $set) { ?>
+    <li><a href="#prod-<?php echo $set; ?>"><?php echo $set; ?></a></li>
 <?php } ?>
 </ul>
+</li>
+</ul>
 
-<?php foreach ($data as $set => $entities) { ?>
-    <h2 id="<?php echo $set; ?>"><?php echo $set; ?></h2>
+<ul>
+<li>Test (DIY)
+<ul>
+<?php foreach (array_keys($testAcceptedData) as $set) { ?>
+    <li><a href="#test-<?php echo $set; ?>"><?php echo $set; ?></a></li>
+<?php } ?>
+</ul>
+</li>
+</ul>
+
+<h1 id="prod">Production</h1>
+<?php foreach ($prodAcceptedData as $set => $entities) { ?>
+    <h2 id="prod-<?php echo $set; ?>"><?php echo $set; ?></h2>
+
+    <table>
+    <thead>
+        <tr><th>Entity ID</th><th>State</th><th>Messages</th></tr>
+    </thead>
+    <tbody>
+    <?php foreach ($entities as $k => $v) { ?>
+        <tr>
+            <td><a target="_blank" href="<?php echo $janusHost; ?>/simplesaml/module.php/janus/editentity.php?eid=<?php echo $v['eid']; ?>"><?php echo $k; ?></a></td>
+            <td><span class="<?php echo $v['state']; ?>"><?php echo $v['state']; ?></span></td>
+            <td><ul>
+            <?php foreach ($v['messages'] as $m) { ?>
+                <li><?php echo $m['message']; ?></li>
+            <?php } ?>
+            </ul></td></tr>
+    <?php } ?>
+    </tbody>
+    </table>
+<?php } ?>
+
+<h1 id="test">Test (DIY)</h1>
+<?php foreach ($testAcceptedData as $set => $entities) { ?>
+    <h2 id="test-<?php echo $set; ?>"><?php echo $set; ?></h2>
 
     <table>
     <thead>
