@@ -137,8 +137,7 @@ EOF;
 echo count($saml20_idp) . " IdPs" . PHP_EOL;
 echo count($saml20_sp) . " SPs" . PHP_EOL;
 
-findAclConflicts($saml20_idp, $saml20_sp);
-moveAclToSP($saml20_idp, $saml20_sp);
+resolveAcl($saml20_idp, $saml20_sp);
 
 convertToUIInfo($saml20_idp);
 convertToUIInfo($saml20_sp);
@@ -209,42 +208,81 @@ function arrayizeMetadata(&$metadata)
     }
 }
 
-function findAclConflicts(&$idp, &$sp)
+function resolveAcl(&$idp, &$sp)
 {
-    foreach ($sp as $eid => $metadata) {
-        if (!$metadata['allowAll']) {
-            _l($metadata, "WARNING", "'allowAll' not set");
-            foreach ($metadata['IDPList'] as $i) {
-                if (!array_key_exists($i, $idp)) {
-                    _l($metadata, "WARNING", "IdP '$i' does not exist");
-                    continue;
-                }
-                if (!in_array($eid, $idp[$i]['SPList']) && !$idp[$i]['allowAll']) {
-                    _l($metadata, "WARNING", "IdP '$i' does not have this SP listed");
-                    // FIXME: add also IdP log item?
-                    continue;
-                }
-            }
-        }
-    }
+    // loop through all SPs
+    // is allow all set?
+    // YES:
+    //      loop through IdPs with same state
+    //      Idp has allow all set?
+    //      YES: add IdP to SP ACL
+    //      Idp has SP in ACL?
+    //      YES: add IdP to SP ACL
+    // NO:
+    //      loop through IdPs mentioned (with same state)
+    //      IdP has allow all set?
+    //      YES: add IdP to SP ACL
+    //      IdP has SP in ACL?
+    //      YES: add IdP to SP ACL
 
-    foreach ($idp as $eid => $metadata) {
-        if ($metadata['allowAll']) {
-            _l($metadata, "WARNING", "'allowAll' set");
-            continue;
+    // loop through all SPs
+    foreach ($sp as $speid => $spmetadata) {
+        $sp[$speid]['SPACL'] = array();
+
+        // SP allowAll?
+        if ($spmetadata['allowAll']) {
+            // SP allowAll
+            // loop through all IdPs
+            foreach ($idp as $idpeid => $idpmetadata) {
+                // same state?
+                if ($idpmetadata['state'] === $spmetadata['state']) {
+                    // same state
+                    // IdP allowAll?
+                    if ($idpmetadata['allowAll']) {
+                        // IdP allowAll
+                        array_push($sp[$speid]['SPACL'], $idpeid);
+                    } else {
+                        // !IdP allowAll
+                        // IdP has SP in ACL?
+                        if (in_array($speid, $idpmetadata['SPList'])) {
+                            // YES
+                            array_push($sp[$speid]['SPACL'], $idpeid);
+                        }
+                    }
+                }
+            }
+        } else {
+            // !SP allowAll
+            // loop through all mentioned IdPs
+            foreach ($spmetadata['IDPList'] as $idpeid) {
+                // FIXME: may not exist!
+                if (isset($idp[$idpeid])) {
+                    $idpmetadata = $idp[$idpeid];
+                    // same state?
+                    if ($idpmetadata['state'] === $spmetadata['state']) {
+                        // same state
+                        // IdP allowAll?
+                        if ($idpmetadata['allowAll']) {
+                            // IdP allowAll
+                            array_push($sp[$speid]['SPACL'], $idpeid);
+                        } else {
+                            // !IdP allowAll
+                            // IdP has SP in ACL?
+                            if (in_array($speid, $idpmetadata['SPList'])) {
+                                // YES
+                                array_push($sp[$speid]['SPACL'], $idpeid);
+                            }
+                        }
+                    }
+                }
+            }
         }
-        foreach ($metadata['SPList'] as $s) {
-            if (!array_key_exists($s, $sp)) {
-                _l($metadata, "WARNING", "SP $s does not exist");
-                continue;
-            }
-            if ($sp[$s]['allowAll']) {
-                continue;
-            }
-            if (!in_array($eid, $sp[$s]['IDPList'])) {
-                _l($metadata, "WARNING", "SP $s does not have this IdP listed");
-            }
-        }
+        $sp[$speid]['IDPList'] = $sp[$speid]['SPACL'];
+        unset($sp[$speid]['SPACL']);
+    }
+    // remove SPList from IdP entries
+    foreach ($idp as $idpeid => $idpmetadata) {
+        unset($idp[$idpeid]['SPList']);
     }
 }
 
@@ -368,27 +406,6 @@ function validateLogo(array $logo, array &$errorMessage)
     }
 
     return $l;
-}
-
-function moveAclToSP(&$idp, &$sp)
-{
-    // remove the ACL from all SPs
-    foreach ($sp as $eid => $metadata) {
-        $sp[$eid]["IDPList"] = array();
-    }
-
-    // for every IdP take the ACL and add its eid to the SP "IDPList" in the ACL list
-    foreach ($idp as $eid => $metadata) {
-        foreach ($metadata['SPList'] as $s) {
-            if (!array_key_exists($s, $sp)) {
-                _l($metadata, "WARNING", "SP $s does not exist");
-                continue;
-            }
-            array_push($sp[$s]["IDPList"], $eid);
-        }
-        // remove the ACL from the IdP
-        unset($idp[$eid]['SPList']);
-    }
 }
 
 function filterKeywords($keywords)
