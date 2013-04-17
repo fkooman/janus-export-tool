@@ -79,9 +79,17 @@ EOF;
         $sth->execute();
         $arpResult = $sth->fetch(PDO::FETCH_ASSOC);
         if (NULL !== $arpResult['attributes']) {
-            $metadata['attributes'] = array_keys(unserialize($arpResult['attributes']));
-            $allAttributes = array_unique(array_merge($allAttributes, $metadata['attributes']));
+            $attributes = array_keys(unserialize($arpResult['attributes']));
+            if (0 === count($attributes)) {
+                // no attributes, good
+                $metadata['attributes'] = FALSE;
+            } else {
+                // some attributes, also good
+                $metadata['attributes'] = $attributes;
+                $allAttributes = array_unique(array_merge($allAttributes, $attributes));
+            }
         } else {
+            // no ARP, so *all* possible attributes, not good
             $metadata['attributes'] = array();
         }
     }
@@ -123,6 +131,12 @@ EOF;
     $log[$metadata['metadata-set']][$metadata['entityid']]['messages'] = array();
     $log[$metadata['metadata-set']][$metadata['entityid']]['state'] = $metadata['state'];
     $log[$metadata['metadata-set']][$metadata['entityid']]['eid'] = $metadata['eid'];
+
+    if ("saml20-sp-remote" === $metadata['metadata-set'] && is_array($metadata['attributes']) && 0 === count($metadata['attributes'])) {
+        // no ARP
+        _l($metadata, "WARNING", "no ARP set");
+    }
+
     if ($metadata['metadata-set'] === "saml20-sp-remote") {
         $metadata['IDPList'] = $a;
         $saml20_sp[$r['entityid']] = $metadata;
