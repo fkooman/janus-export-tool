@@ -414,6 +414,24 @@ function validateLogo(array $logo, array &$errorMessage)
         return FALSE;
     }
 
+//     $size = @getimagesize($logo['url']);
+//     if (FALSE === $size || !is_array($size) || 2 > count($size)) {
+//         array_push($errorMessage, "unable to retrieve image size from URL");
+//     }
+//     $width = $size[0];
+//     $height = $size[1];
+// 
+//     if ((int) $logo['width'] !== $width) {
+//         array_push($errorMessage, "invalid width (" . $logo['width'] . "), actual width is " . $width);
+//     }
+//     if ((int) $logo['height'] !== $height) {
+//         array_push($errorMessage, "invalid height (" . $logo['height'] . "), actual height is " . $height);
+//     }
+// 
+//     if (0 !== count($errorMessage)) {
+//         return FALSE;
+//     }
+
     $l = array ("url" => $logo['url'], "width" => (int) $logo['width'], "height" => (int) $logo['height']);
     if (array_key_exists("lang", $logo) && !empty($logo['lang'])) {
         $l['lang'] = $logo['lang'];
