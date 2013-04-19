@@ -186,6 +186,8 @@ removeSecrets($saml20_sp);
 updateRedirectSign($saml20_idp);
 updateRedirectSign($saml20_sp);
 
+updateSpConsent($saml20_sp);
+
 if (NULL !== $requestedState) {
     filterState($saml20_idp, $requestedState);
     filterState($saml20_sp, $requestedState);
@@ -620,6 +622,16 @@ function updateRedirectSign(&$entities)
                 $entities[$eid]['validate.authnrequest'] = $metadata['redirect.sign'] ? TRUE : FALSE;
                 unset($entities[$eid]['redirect.sign']);
             }
+        }
+    }
+}
+
+function updateSpConsent(&$entities)
+{
+    foreach ($entities as $eid => $metadata) {
+        if (isset($metadata['coin']['no_consent_required'])) {
+            $entities[$eid]['consent.disable'] = $metadata['coin']['no_consent_required'] == 1 ? TRUE : FALSE;
+            unset($entities[$eid]['coin']['no_consent_required']);
         }
     }
 }
