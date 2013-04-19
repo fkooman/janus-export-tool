@@ -20,7 +20,13 @@ janusHost="https://janus.example.org"
 ; specify which IdPs and SPs SHOULD be configured. Specifying SPs will require 
 ; ALL IdPs to have this SP configured, specifying IdPs will require ALL SPs to  
 ; have this IdP configured. Specify the entity ID of the IdPs and SPs
-[require]
+[require:prodaccepted]
+;sp[]  = "http://xyz.example.org"
+;sp[]  = "http://abc.example.org"
+;idp[] = "http://foo.example.org"
+;idp[] = "http://bar.example.org"
+
+[require:testaccepted]
 ;sp[]  = "http://xyz.example.org"
 ;sp[]  = "http://abc.example.org"
 ;idp[] = "http://foo.example.org"

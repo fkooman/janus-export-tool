@@ -10,8 +10,10 @@ $dirName        = isset($config['export']['dir']) ? $config['export']['dir'] : N
 // filter
 $requestedState = isset($config['filter']['state']) ? $config['filter']['state'] : NULL;
 
-$requiredIdpAcl = isset($config['require']['idp']) ? $config['require']['idp'] : NULL;
-$requiredSpAcl  = isset($config['require']['sp']) ? $config['require']['sp'] : NULL;
+$requiredIdpAclProdAccepted = isset($config['require:prodaccepted']['idp']) ? $config['require:prodaccepted']['idp'] : NULL;
+$requiredSpAclProdAccepted  = isset($config['require:prodaccepted']['sp']) ? $config['require:prodaccepted']['sp'] : NULL;
+$requiredIdpAclTestAccepted = isset($config['require:testaccepted']['idp']) ? $config['require:testaccepted']['idp'] : NULL;
+$requiredSpAclTestAccepted  = isset($config['require:testaccepted']['sp']) ? $config['require:testaccepted']['sp'] : NULL;
 
 // required parameters
 if (NULL === $dbDsn) {
@@ -661,12 +663,15 @@ function verifyOrganization(&$entities)
 
 function verifyRequiredConnections(&$idp, &$sp)
 {
-    global $requiredIdpAcl;
-    global $requiredSpAcl;
+    global $requiredIdpAclProdAccepted;
+    global $requiredSpAclProdAccepted;
+    global $requiredIdpAclTestAccepted;
+    global $requiredSpAclTestAccepted;
 
-    if (NULL !== $requiredIdpAcl && 0 !== count($requiredIdpAcl)) {
-        foreach ($sp as $eid => $metadata) {
-            foreach ($requiredIdpAcl as $i) {
+    foreach ($sp as $eid => $metadata) {
+        $ri = "prodaccepted" === $metadata['state'] ? $requiredIdpAclProdAccepted : $requiredIdpAclTestAccepted;
+        if (NULL !== $ri && 0 !== count($ri)) {
+            foreach ($ri as $i) {
                 if (!in_array($i, $metadata['IDPList'])) {
                     _l($metadata, "WARNING", "required IdP " . $i . " not in ACL");
                 }
@@ -674,9 +679,10 @@ function verifyRequiredConnections(&$idp, &$sp)
         }
     }
 
-    if (NULL !== $requiredSpAcl && 0 !== count($requiredSpAcl)) {
-        foreach ($idp as $eid => $metadata) {
-            foreach ($requiredSpAcl as $s) {
+    foreach ($idp as $eid => $metadata) {
+        $rs = "prodaccepted" === $metadata['state'] ? $requiredSpAclProdAccepted : $requiredSpAclTestAccepted;
+        if (NULL !== $rs && 0 !== count($rs)) {
+            foreach ($rs as $s) {
                 if (!in_array($metadata['entityid'], $sp[$s]['IDPList'])) {
                     _l($metadata, "WARNING", "required SP " . $s . " not in ACL");
                 }
