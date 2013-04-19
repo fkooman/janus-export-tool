@@ -10,6 +10,9 @@ $dirName        = isset($config['export']['dir']) ? $config['export']['dir'] : N
 // filter
 $requestedState = isset($config['filter']['state']) ? $config['filter']['state'] : NULL;
 
+$requiredIdpAcl = isset($config['require']['idp']) ? $config['require']['idp'] : NULL;
+$requiredSpAcl  = isset($config['require']['sp']) ? $config['require']['sp'] : NULL;
+
 // required parameters
 if (NULL === $dbDsn) {
     die("database DSN needs to be set in configuration file" . PHP_EOL);
@@ -187,6 +190,8 @@ updateRedirectSign($saml20_idp);
 updateRedirectSign($saml20_sp);
 
 updateSpConsent($saml20_sp);
+
+verifyRequiredConnections($saml20_idp, $saml20_sp);
 
 if (NULL !== $requestedState) {
     filterState($saml20_idp, $requestedState);
@@ -650,6 +655,32 @@ function verifyOrganization(&$entities)
         }
         if (!isset($metadata['OrganizationURL']['en']) && !isset($metadata['OrganizationURL']['nl'])) {
             _l($metadata, "WARNING", "missing OrganizationURL");
+        }
+    }
+}
+
+function verifyRequiredConnections(&$idp, &$sp)
+{
+    global $requiredIdpAcl;
+    global $requiredSpAcl;
+
+    if (NULL !== $requiredIdpAcl && 0 !== count($requiredIdpAcl)) {
+        foreach ($sp as $eid => $metadata) {
+            foreach ($requiredIdpAcl as $i) {
+                if (!in_array($i, $metadata['IDPList'])) {
+                    _l($metadata, "WARNING", "required IdP " . $i . " not in ACL");
+                }
+            }
+        }
+    }
+
+    if (NULL !== $requiredSpAcl && 0 !== count($requiredSpAcl)) {
+        foreach ($idp as $eid => $metadata) {
+            foreach ($requiredSpAcl as $s) {
+                if (!in_array($metadata['entityid'], $sp[$s]['IDPList'])) {
+                    _l($metadata, "WARNING", "required SP " . $s . " not in ACL");
+                }
+            }
         }
     }
 }
