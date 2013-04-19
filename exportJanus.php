@@ -94,6 +94,19 @@ EOF;
         }
     }
 
+    // add consent disabling if IdP
+    if ("saml20-idp" === $r['type']) {
+        $sql = "SELECT remoteentityid FROM janus__disableConsent WHERE eid = :eid AND revisionid = :revisionid";
+        $sth = $pdo->prepare($sql);
+        $sth->bindValue(":eid", $r['eid']);
+        $sth->bindValue(":revisionid", $r['revisionid']);
+        $sth->execute();
+        $disableConsentResult = $sth->fetchAll(PDO::FETCH_COLUMN);
+        if (FALSE !== $disableConsentResult && 0 !== count($disableConsentResult)) {
+            $metadata['consent.disable'] = $disableConsentResult;
+        }
+    }
+
 $sql = <<< EOF
     SELECT
         e.entityid
@@ -420,14 +433,14 @@ function validateLogo(array $logo, array &$errorMessage)
 //     }
 //     $width = $size[0];
 //     $height = $size[1];
-// 
+//
 //     if ((int) $logo['width'] !== $width) {
 //         array_push($errorMessage, "invalid width (" . $logo['width'] . "), actual width is " . $width);
 //     }
 //     if ((int) $logo['height'] !== $height) {
 //         array_push($errorMessage, "invalid height (" . $logo['height'] . "), actual height is " . $height);
 //     }
-// 
+//
 //     if (0 !== count($errorMessage)) {
 //         return FALSE;
 //     }
