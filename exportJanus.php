@@ -289,6 +289,7 @@ function resolveAcl(&$idp, &$sp)
             }
         } else {
             // !SP allowAll
+            _l($spmetadata, "WARNING", "allowAll not set");
             // loop through all mentioned IdPs
             foreach ($spmetadata['IDPList'] as $idpeid) {
                 // FIXME: may not exist!
@@ -300,6 +301,7 @@ function resolveAcl(&$idp, &$sp)
                         // IdP allowAll?
                         if ($idpmetadata['allowAll']) {
                             // IdP allowAll
+                            _l($idpmetadata, "WARNING", "allowAll set");
                             array_push($sp[$speid]['SPACL'], $idpeid);
                         } else {
                             // !IdP allowAll
