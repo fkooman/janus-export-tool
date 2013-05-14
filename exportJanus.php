@@ -139,12 +139,9 @@ EOF;
 
     $metadata['entityid'] = $r['entityid'];
     $metadata['eid'] = $r['eid'];
-
-    if (!empty($r['metadataurl'])) {
-        $metadata['metadata-url'] = $r['metadataurl'];
-    }
     $metadata['metadata-set'] = $r['type'] . "-remote";
     $metadata['state'] = $r['state'];
+    $metadata['metadata-url'] = $r['metadataurl'];
 
     $log[$metadata['metadata-set']][$metadata['entityid']]['messages'] = array();
     $log[$metadata['metadata-set']][$metadata['entityid']]['state'] = $metadata['state'];
@@ -179,6 +176,9 @@ validateContacts($saml20_sp);
 
 validateEndpoints($saml20_idp);
 validateEndpoints($saml20_sp);
+
+validateMetadataURL($saml20_idp);
+validateMetadataURL($saml20_sp);
 
 checkName($saml20_idp);
 checkName($saml20_sp);
@@ -651,6 +651,24 @@ function updateSpConsent(&$entities)
         if (isset($metadata['coin']['no_consent_required'])) {
             $entities[$eid]['consent.disable'] = $metadata['coin']['no_consent_required'] == 1 ? TRUE : FALSE;
             unset($entities[$eid]['coin']['no_consent_required']);
+        }
+    }
+}
+
+function validateMetadataUrl(&$entities)
+{
+    foreach ($entities as $eid => $metadata) {
+        if (NULL === $metadata['metadata-url']) {
+            _l($metadata, "WARNING", "no metadata URL specified");
+            unset($entities[$eid]['metadata-url']);
+        } else {
+            $mdu = trim($metadata['metadata-url']);
+            if (FALSE === filter_var($mdu, FILTER_VALIDATE_URL)) {
+                _l($metadata, "WARNING", "invalid metadata URL specified");
+                unset($entities[$eid]['metadata-url']);
+            } else {
+                $entities[$eid]['metadata-url'] = $mdu;
+            }
         }
     }
 }
