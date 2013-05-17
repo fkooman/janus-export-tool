@@ -667,6 +667,9 @@ function validateMetadataUrl(&$entities)
                 _l($metadata, "WARNING", "invalid metadata URL specified");
                 unset($entities[$eid]['metadata-url']);
             } else {
+                if (0 === strpos($mdu, "http://")) {
+                    _l($metadata, "WARNING", "non SSL metadata URL specified");
+                }
                 $entities[$eid]['metadata-url'] = $mdu;
             }
         }
