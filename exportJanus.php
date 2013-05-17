@@ -544,6 +544,9 @@ function filterEndpoint(array $ep, array &$errorMessage)
         if (FALSE === filter_var($ep['Location'], FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
             array_push($errorMessage, "invalid URL");
         }
+        if (0 === strpos($ep['Location'], "http://")) {
+            array_push($errorMessage, "non SSL endpoint URL specified");
+        }
     }
 
     if (!array_key_exists("Binding", $ep)) {
