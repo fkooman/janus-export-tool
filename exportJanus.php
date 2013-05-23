@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set("Europe/Amsterdam");
+
 # for certificate parsing
 require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParser.php';
 require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParserException.php';
