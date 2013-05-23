@@ -22,6 +22,12 @@
     div.timestamp {
     float: right;
     }
+    span.WARNING {
+        color: black;
+    }
+    span.ERROR {
+        color: red;
+    }
 </style>
 </head>
 <body>
@@ -67,7 +73,7 @@
             <td><span class="<?php echo $v['state']; ?>"><?php echo $v['state']; ?></span></td>
             <td><ul>
             <?php foreach ($v['messages'] as $m) { ?>
-                <li><?php echo $m['message']; ?></li>
+                <li><span class="<?php echo $m['level']; ?>"><?php echo $m['message']; ?></span></li>
             <?php } ?>
             </ul></td></tr>
     <?php } ?>

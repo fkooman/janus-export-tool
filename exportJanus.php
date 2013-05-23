@@ -1,4 +1,9 @@
 <?php
+
+# for certificate parsing
+require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParser.php';
+require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParserException.php';
+
 $config = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "config.ini", TRUE);
 
 // database
@@ -185,6 +190,8 @@ checkName($saml20_sp);
 
 verifyOrganization($saml20_idp);
 verifyOrganization($saml20_sp);
+
+verifyCertificates($saml20_idp);
 
 removeSecrets($saml20_sp);
 
@@ -693,6 +700,29 @@ function verifyOrganization(&$entities)
         }
         if (!isset($metadata['OrganizationURL']['en']) && !isset($metadata['OrganizationURL']['nl'])) {
             _l($metadata, "WARNING", "missing OrganizationURL");
+        }
+    }
+}
+
+function verifyCertificates(&$entities)
+{
+    foreach ($entities as $eid => $metadata) {
+        verifyCertificate($metadata, 'certData');
+        verifyCertificate($metadata, 'certData2');
+    }
+}
+
+function verifyCertificate($metadata, $key)
+{
+    if (isset($metadata[$key]) && !empty($metadata[$key])) {
+        // certData available
+        try {
+            $c = new \fkooman\x509\CertParser($metadata[$key]);
+            if (time() > $c->getExpiry()) {
+                _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $c->getExpiry())));
+            }
+        } catch (\fkooman\x509\CertParserException $e) {
+            _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
         }
     }
 }
