@@ -1,0 +1,7 @@
+{
+    "name": "fkooman/janus-export-tool", 
+    "require": {
+        "fkooman/php-cert-parser": "0.1.0", 
+        "php": ">=5.3.0"
+    }
+}

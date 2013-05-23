@@ -2,9 +2,10 @@
 
 date_default_timezone_set("Europe/Amsterdam");
 
-# for certificate parsing
-require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParser.php';
-require_once 'extlib/php-cert-parser/lib/fkooman/x509/CertParserException.php';
+require_once 'vendor/autoload.php';
+
+use \fkooman\X509\CertParser as CertParser;
+use \fkooman\X509\CertParserException as CertParserException;
 
 $config = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "config.ini", TRUE);
 
@@ -719,13 +720,14 @@ function verifyCertificate($metadata, $key)
     if (isset($metadata[$key]) && !empty($metadata[$key])) {
         // certData available
         try {
-            $c = new \fkooman\x509\CertParser($metadata[$key]);
-            if (time() > $c->getExpiry()) {
-                _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $c->getExpiry())));
-            } elseif (time() + 60*60*24*14 > $c->getExpiry()) {
-                _l($metadata, "INFO", sprintf("certificate in '%s' is about to expire at %s", $key, date("r", $c->getExpiry())));
+            $c = new CertParser($metadata[$key]);
+            $expiresAt = $c->getNotValidAfter();
+            if (time() > $expiresAt) {
+                _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $expiresAt)));
+            } elseif (time() + 60*60*24*14 > $expiresAt) {
+                _l($metadata, "INFO", sprintf("certificate in '%s' is about to expire at %s", $key, date("r", $expiresAt)));
             }
-        } catch (\fkooman\x509\CertParserException $e) {
+        } catch (CertParserException $e) {
             _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
         }
     }
