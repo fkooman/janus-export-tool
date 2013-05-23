@@ -3,10 +3,9 @@ This tool exports JANUS data to JSON for both export purposes and checking the
 data to see if the data contained within JANUS is valid.
 
 # Installation
-You can run the script `docs/install_dependencies.sh` to install the
-certificate parsing library.
+You can use [Composer](http://getcomposer.org/) to install the dependencies.
 
-    $ sh docs/install_dependencies.sh
+    $ composer install
 
 # Configuration
 Copy the `config/config.ini.defaults` to `config/config.ini` and modify it for
