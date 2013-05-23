@@ -722,6 +722,8 @@ function verifyCertificate($metadata, $key)
             $c = new \fkooman\x509\CertParser($metadata[$key]);
             if (time() > $c->getExpiry()) {
                 _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $c->getExpiry())));
+            } elseif (time() + 60*60*24*14 > $c->getExpiry()) {
+                _l($metadata, "INFO", sprintf("certificate in '%s' is about to expire at %s", $key, date("r", $c->getExpiry())));
             }
         } catch (\fkooman\x509\CertParserException $e) {
             _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));

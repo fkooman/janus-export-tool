@@ -28,6 +28,9 @@
     span.ERROR {
         color: red;
     }
+    span.INFO {
+        color: blue;
+    }
 </style>
 </head>
 <body>
