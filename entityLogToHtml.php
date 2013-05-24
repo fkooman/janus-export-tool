@@ -36,10 +36,21 @@ foreach ($data as $set => $entries) {
             $testAccepted[$eid] = $metadata;
         }
     }
-    ksort($prodAccepted);
+    uasort($prodAccepted, 'sortByName');
+    //ksort($prodAccepted);
     $prodAcceptedData[$set] = $prodAccepted;
-    ksort($testAccepted);
+    //ksort($testAccepted);
+    uasort($testAccepted, 'sortByName');
     $testAcceptedData[$set] = $testAccepted;
+}
+
+function sortByName($a, $b)
+{
+    if (isset($a['name']) && isset($b['name'])) {
+        return strcasecmp($a['name'], $b['name']);
+    }
+
+    return 0;
 }
 
 ksort($prodAcceptedData);
