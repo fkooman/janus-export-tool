@@ -26,10 +26,7 @@ foreach ($data as $metadata) {
     }
     $metadataUrl = $metadata['metadata-url'];
     try {
-        echo "Fetching for '" . $entityId . "'..." . PHP_EOL;
-
         $fileName = $metadataDirName . DIRECTORY_SEPARATOR . md5($metadataUrl) . ".xml";
-
         // FIXME: we should also use conditional download, by looking at Last-Modified and/or ETag header
         if (!file_exists($fileName)) {
             $md = fetchMetadata($metadataUrl);
@@ -46,7 +43,10 @@ foreach ($data as $metadata) {
 
 function fetchMetadata($metadataUrl)
 {
-    $client = new Client($metadataUrl);
+    $client = new Client($metadataUrl, array(
+        // set timeout
+        'curl.options'   => array(CURLOPT_CONNECTTIMEOUT => 10),
+    ));
     $request = $client->get();
     $response = $request->send();
 
