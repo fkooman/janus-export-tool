@@ -37,9 +37,7 @@ foreach ($data as $set => $entries) {
         }
     }
     uasort($prodAccepted, 'sortByName');
-    //ksort($prodAccepted);
     $prodAcceptedData[$set] = $prodAccepted;
-    //ksort($testAccepted);
     uasort($testAccepted, 'sortByName');
     $testAcceptedData[$set] = $testAccepted;
 }

@@ -31,6 +31,8 @@ if (NULL === $dirName) {
     die("export directory needs to be set in configuration file" . PHP_EOL);
 }
 
+$metadataDirName = $dirName . DIRECTORY_SEPARATOR . "metadata";
+
 $pdo = new PDO($dbDsn, $dbUser, $dbPass);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -673,6 +675,8 @@ function updateSpConsent(&$entities)
 
 function validateMetadataUrl(&$entities)
 {
+    global $metadataDirName;
+
     foreach ($entities as $eid => $metadata) {
         if (NULL === $metadata['metadata-url']) {
             _l($metadata, "WARNING", "no metadata URL specified");
@@ -687,6 +691,13 @@ function validateMetadataUrl(&$entities)
                     _l($metadata, "WARNING", "non SSL metadata URL specified");
                 }
                 $entities[$eid]['metadata-url'] = $mdu;
+
+                // here we check if the fetching of the metadata succeeded
+                $metadataFile = @file_get_contents($metadataDirName . DIRECTORY_SEPARATOR . md5($mdu) . ".xml");
+                if (FALSE === $metadataFile) {
+                    _l($metadata, "WARNING", "unable to fetch metadata from metadata URL");
+                }
+                compareMetadata($metadata, $metadataFile);
             }
         }
     }
@@ -734,6 +745,11 @@ function verifyCertificate($metadata, $key)
             _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
         }
     }
+}
+
+function compareMetadata(array $metadata, $metadataFile)
+{
+    return TRUE;
 }
 
 function verifyRequiredConnections(&$idp, &$sp)
