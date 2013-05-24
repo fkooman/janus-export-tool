@@ -154,6 +154,9 @@ EOF;
     $log[$metadata['metadata-set']][$metadata['entityid']]['messages'] = array();
     $log[$metadata['metadata-set']][$metadata['entityid']]['state'] = $metadata['state'];
     $log[$metadata['metadata-set']][$metadata['entityid']]['eid'] = $metadata['eid'];
+    if (isset($metadata['name']['en'])) {
+        $log[$metadata['metadata-set']][$metadata['entityid']]['name'] = $metadata['name']['en'];
+    }
 
     if ("saml20-sp-remote" === $metadata['metadata-set'] && is_array($metadata['attributes']) && 0 === count($metadata['attributes'])) {
         // no ARP

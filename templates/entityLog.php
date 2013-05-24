@@ -67,12 +67,12 @@
 
     <table>
     <thead>
-        <tr><th>Entity ID</th><th>State</th><th>Messages</th></tr>
+        <tr><th>Name</th><th>State</th><th>Messages</th></tr>
     </thead>
     <tbody>
     <?php foreach ($entities as $k => $v) { ?>
         <tr>
-            <td><a target="_blank" href="<?php echo $janusHost; ?>/simplesaml/module.php/janus/editentity.php?eid=<?php echo $v['eid']; ?>"><?php echo $k; ?></a></td>
+            <td><a target="_blank" href="<?php echo $janusHost; ?>/simplesaml/module.php/janus/editentity.php?eid=<?php echo $v['eid']; ?>"><?php echo isset($v['name']) ? $v['name'] : $k; ?></a><br><small><?php echo $k; ?></small></td>
             <td><span class="<?php echo $v['state']; ?>"><?php echo $v['state']; ?></span></td>
             <td><ul>
             <?php foreach ($v['messages'] as $m) { ?>
@@ -90,12 +90,12 @@
 
     <table>
     <thead>
-        <tr><th>Entity ID</th><th>State</th><th>Messages</th></tr>
+        <tr><th>Name</th><th>State</th><th>Messages</th></tr>
     </thead>
     <tbody>
     <?php foreach ($entities as $k => $v) { ?>
         <tr>
-            <td><a target="_blank" href="<?php echo $janusHost; ?>/simplesaml/module.php/janus/editentity.php?eid=<?php echo $v['eid']; ?>"><?php echo $k; ?></a></td>
+            <td><a target="_blank" href="<?php echo $janusHost; ?>/simplesaml/module.php/janus/editentity.php?eid=<?php echo $v['eid']; ?>"><?php echo isset($v['name']) ? $v['name'] : $k; ?></a><br><small><?php echo $k; ?></small></td>
             <td><span class="<?php echo $v['state']; ?>"><?php echo $v['state']; ?></span></td>
             <td><ul>
             <?php foreach ($v['messages'] as $m) { ?>
