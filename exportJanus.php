@@ -728,6 +728,9 @@ function verifyOrganization(&$entities)
 function verifyCertificates(&$entities)
 {
     foreach ($entities as $eid => $metadata) {
+        if ( (!array_key_exists('certData', $metadata) || empty($metadata['certData'])) && (!array_key_exists('certData2', $metadata) || empty($metadata['certData2']))) {
+            _l($metadata, "ERROR", "no certificate configured for this IdP");
+        }
         verifyCertificate($metadata, 'certData');
         verifyCertificate($metadata, 'certData2');
     }
@@ -736,7 +739,7 @@ function verifyCertificates(&$entities)
 function verifyCertificate($metadata, $key)
 {
     if (isset($metadata[$key]) && !empty($metadata[$key])) {
-        // certData available
+        // available
         try {
             $c = new CertParser($metadata[$key]);
             $expiresAt = $c->getNotValidAfter();
@@ -768,7 +771,7 @@ function compareMetadata(array $metadata, $metadataFile)
 
             foreach ($idpMetadata['certData'] as $c) {
                 if (!in_array($c, $janusCert)) {
-                    _l($metadata, "ERROR", "METADATA: certificate in metadata missing from actual configuration");
+                    _l($metadata, "ERROR", "METADATA: certificate in metadata missing from configuration");
                 }
             }
         } else {
