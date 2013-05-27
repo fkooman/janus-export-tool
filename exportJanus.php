@@ -768,7 +768,7 @@ function compareMetadata(array $metadata, $metadataFile)
 
             foreach ($idpMetadata['certData'] as $c) {
                 if (!in_array($c, $janusCert)) {
-                    _l($metadata, "WARNING", "METADATA: certificate in metadata missing from configuration");
+                    _l($metadata, "ERROR", "METADATA: certificate in metadata missing from actual configuration");
                 }
             }
         } else {
