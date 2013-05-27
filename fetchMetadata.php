@@ -16,8 +16,17 @@ if (NULL === $dirName) {
 // FIXME: create dir if it does not exist!
 $metadataDirName = $dirName . DIRECTORY_SEPARATOR . "metadata";
 
+// create the directory if it not set
+if (!is_dir($metadataDirName) && FALSE === @mkdir($metadataDirName, 0777, TRUE)) {
+    die("unable to create the directory '$metadataDirName'" . PHP_EOL);
+}
+
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-idp-remote.json");
-$data = json_decode($jsonData, TRUE);
+$idpData = json_decode($jsonData, TRUE);
+$jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-sp-remote.json");
+$spData = json_decode($jsonData, TRUE);
+
+$data = $idpData + $spData;
 
 foreach ($data as $metadata) {
     $entityId = $metadata['entityid'];
@@ -27,7 +36,7 @@ foreach ($data as $metadata) {
     $metadataUrl = $metadata['metadata-url'];
     try {
         $fileName = $metadataDirName . DIRECTORY_SEPARATOR . md5($metadataUrl) . ".xml";
-        // FIXME: we should also use conditional download, by looking at Last-Modified and/or ETag header
+        // FIXME: we SHOULD also use conditional download, by looking at Last-Modified and/or ETag header
         if (!file_exists($fileName)) {
             $md = fetchMetadata($metadataUrl);
             if (FALSE === @file_put_contents($fileName, $md)) {
@@ -45,7 +54,7 @@ function fetchMetadata($metadataUrl)
 {
     $client = new Client($metadataUrl, array(
         // set timeout
-        'curl.options'   => array(CURLOPT_CONNECTTIMEOUT => 10),
+        'curl.options'   => array(CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_TIMEOUT => 15),
     ));
     $request = $client->get();
     $response = $request->send();

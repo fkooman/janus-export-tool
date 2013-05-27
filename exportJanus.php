@@ -4,6 +4,8 @@ date_default_timezone_set("Europe/Amsterdam");
 
 require_once 'vendor/autoload.php';
 
+require_once 'MetadataParser.php';
+
 use \fkooman\X509\CertParser as CertParser;
 use \fkooman\X509\CertParserException as CertParserException;
 
@@ -694,10 +696,12 @@ function validateMetadataUrl(&$entities)
 
                 // here we check if the fetching of the metadata succeeded
                 $metadataFile = @file_get_contents($metadataDirName . DIRECTORY_SEPARATOR . md5($mdu) . ".xml");
+                // FIXME: do not load the file twice!
                 if (FALSE === $metadataFile) {
                     _l($metadata, "WARNING", "unable to fetch metadata from metadata URL");
+                    continue;
                 }
-                compareMetadata($metadata, $metadataFile);
+                compareMetadata($metadata, $metadataDirName . DIRECTORY_SEPARATOR . md5($mdu) . ".xml");
             }
         }
     }
@@ -749,7 +753,30 @@ function verifyCertificate($metadata, $key)
 
 function compareMetadata(array $metadata, $metadataFile)
 {
-    return TRUE;
+    $entityId = $metadata['entityid'];
+    try {
+        if ("saml20-idp-remote" === $metadata['metadata-set']) {
+            $idpMetadata = MetadataParser::idp($metadataFile, $entityId);
+
+            $janusCert = array();
+            foreach (array("certData", "certData2") as $c) {
+                if (isset($metadata[$c]) && !empty($metadata[$c])) {
+                    $cp = new CertParser($metadata[$c]);
+                    array_push($janusCert, $cp->toBase64());
+                }
+            }
+
+            foreach ($idpMetadata['certData'] as $c) {
+                if (!in_array($c, $janusCert)) {
+                    _l($metadata, "WARNING", "METADATA: certificate in metadata missing from configuration");
+                }
+            }
+        } else {
+            $spMetadata = MetadataParser::sp($metadataFile, $entityId);
+        }
+    } catch (MetadataParserException $e) {
+        _l($metadata, "WARNING", "METADATA: " . $e->getMessage());
+    }
 }
 
 function verifyRequiredConnections(&$idp, &$sp)
