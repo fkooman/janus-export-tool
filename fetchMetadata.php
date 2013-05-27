@@ -21,6 +21,11 @@ if (!is_dir($metadataDirName) && FALSE === @mkdir($metadataDirName, 0777, TRUE))
     die("unable to create the directory '$metadataDirName'" . PHP_EOL);
 }
 
+// remove all metadata files, we will fetch everything again
+foreach (glob($metadataDirName . "/*.xml") as $f) {
+    unlink($f);
+}
+
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-idp-remote.json");
 $idpData = json_decode($jsonData, TRUE);
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-sp-remote.json");
