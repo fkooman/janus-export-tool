@@ -49,10 +49,9 @@ foreach ($data as $metadata) {
             }
         }
     } catch (Exception $e) {
-        echo $entityId . PHP_EOL;
-        echo "\tWARNING: " . $e->getMessage() . PHP_EOL;
+        //echo $entityId . PHP_EOL;
+        //echo "\tWARNING: " . $e->getMessage() . PHP_EOL;
     }
-
 }
 
 function fetchMetadata($metadataUrl)
@@ -63,6 +62,8 @@ function fetchMetadata($metadataUrl)
     ));
     $request = $client->get();
     $response = $request->send();
+    echo "    Last-Modified: " . $response->getLastModified() . PHP_EOL;
+    echo "    Etag         : " . $response->getEtag() . PHP_EOL;
 
     return $response->getBody();
 }

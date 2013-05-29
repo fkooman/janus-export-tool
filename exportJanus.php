@@ -203,6 +203,8 @@ verifyOrganization($saml20_sp);
 
 verifyCertificates($saml20_idp);
 
+verifyOAuth($saml20_sp);
+
 removeSecrets($saml20_sp);
 
 updateRedirectSign($saml20_idp);
@@ -750,6 +752,39 @@ function verifyCertificate($metadata, $key)
             }
         } catch (CertParserException $e) {
             _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
+        }
+    }
+}
+
+function verifyOAuth(&$entities)
+{
+    foreach ($entities as $eid => $metadata) {
+
+        if (isset($metadata['coin']['oauth']) && !isset($metadata['coin']['gadgetbaseurl'])) {
+            _l($metadata, "WARNING", "OAuth: some parameters specified, no client_id (gadgetbaseurl)");
+        }
+
+        if (!isset($metadata['coin']['oauth']) && isset($metadata['coin']['gadgetbaseurl'])) {
+            _l($metadata, "WARNING", "OAuth: client_id (gadgetbaseurl) specified, but no other parameters");
+        }
+
+        if (isset($metadata['coin']['oauth'])) {
+            // some OAuth config is available
+            if (isset($metadata['coin']['oauth']['two_legged_allowed'])) {
+                _l($metadata, "WARNING", "OAuth: two legged OAuth allowed");
+            }
+            if (!isset($metadata['coin']['oauth']['callback_url'])) {
+                _l($metadata, "WARNING", "OAuth: missing redirect_uri (callback_url)");
+            }
+            if (!isset($metadata['coin']['gadgetbaseurl'])) {
+                _l($metadata, "WARNING", "OAuth: missing client_id (gadgetbaseurl)");
+            } else {
+                // validate client_id
+                $result = preg_match('/^(?:[\x20-\x7E])*$/', $metadata['coin']['gadgetbaseurl']);
+                if (1 !== $result || FALSE !== strpos($metadata['coin']['gadgetbaseurl'], ":")) {
+                    _l($metadata, "WARNING", "OAuth: client_id (gadgetbaseurl) contains invalid characters");
+                }
+            }
         }
     }
 }
