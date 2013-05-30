@@ -740,18 +740,21 @@ function verifyCertificates(&$entities)
 
 function verifyCertificate($metadata, $key)
 {
-    if (isset($metadata[$key]) && !empty($metadata[$key])) {
-        // available
-        try {
-            $c = new CertParser($metadata[$key]);
-            $expiresAt = $c->getNotValidAfter();
-            if (time() > $expiresAt) {
-                _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $expiresAt)));
-            } elseif (time() + 60*60*24*14 > $expiresAt) {
-                _l($metadata, "INFO", sprintf("certificate in '%s' is about to expire at %s", $key, date("r", $expiresAt)));
+    // we only check expiry for ADFS, not for other IdPs
+    if (FALSE !== strpos($metadata['entityid'], "adfs/services/trust")) {
+        if (isset($metadata[$key]) && !empty($metadata[$key])) {
+            // available
+            try {
+                $c = new CertParser($metadata[$key]);
+                $expiresAt = $c->getNotValidAfter();
+                if (time() > $expiresAt) {
+                    _l($metadata, "ERROR", sprintf("certificate in '%s' expired at %s", $key, date("r", $expiresAt)));
+                } elseif (time() + 60*60*24*14 > $expiresAt) {
+                    _l($metadata, "INFO", sprintf("certificate in '%s' is about to expire at %s", $key, date("r", $expiresAt)));
+                }
+            } catch (CertParserException $e) {
+                _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
             }
-        } catch (CertParserException $e) {
-            _l($metadata, "WARNING", sprintf("unable to parse certificate in '%s': %s", $key, $e->getMessage()));
         }
     }
 }
@@ -806,7 +809,8 @@ function compareMetadata(array $metadata, $metadataFile)
 
             foreach ($idpMetadata['certData'] as $c) {
                 if (!in_array($c, $janusCert)) {
-                    _l($metadata, "ERROR", "METADATA: certificate in metadata missing from configuration");
+                    $cp = new CertParser($c);
+                    _l($metadata, "ERROR", sprintf("METADATA: certificate in metadata missing from configuration [%s, Valid from: %s, Valid to: %s]", $cp->getName(), date("r", $cp->getNotValidBefore()), date("r", $cp->getNotValidAfter())));
                 }
             }
         } else {
