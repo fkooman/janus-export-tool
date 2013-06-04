@@ -34,10 +34,11 @@ class MetadataParser
             // no KeyDescriptor entry for this entityID in metadata
             throw new MetadataParserException("entity not found in metadata, or no KeyDescriptor");
         }
-
         foreach ($result as $cd) {
-            $certData = new CertParser((string) $cd->children("http://www.w3.org/2000/09/xmldsig#")->KeyInfo->X509Data->X509Certificate);
-            array_push($md['certData'], $certData->toBase64());
+            if (!isset($cd['use']) || "signing" == $cd['use']) {
+                $certData = new CertParser((string) $cd->children("http://www.w3.org/2000/09/xmldsig#")->KeyInfo->X509Data->X509Certificate);
+                array_push($md['certData'], $certData->toBase64());
+            }
         }
 
         return $md;
