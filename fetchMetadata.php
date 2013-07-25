@@ -1,6 +1,7 @@
 <?php
 
 require_once 'vendor/autoload.php';
+require_once 'MetadataParser.php';
 
 use Guzzle\Http\Client;
 
@@ -13,8 +14,12 @@ if (NULL === $dirName) {
     die("export directory needs to be set in configuration file" . PHP_EOL);
 }
 
+$parsedMetadata = array();
+
 // FIXME: create dir if it does not exist!
 $metadataDirName = $dirName . DIRECTORY_SEPARATOR . "metadata";
+
+$parsedMetadataFilename = $dirName . DIRECTORY_SEPARATOR . "parsed-metadata.json";
 
 // create the directory if it not set
 if (!is_dir($metadataDirName) && FALSE === @mkdir($metadataDirName, 0777, TRUE)) {
@@ -23,7 +28,7 @@ if (!is_dir($metadataDirName) && FALSE === @mkdir($metadataDirName, 0777, TRUE))
 
 // remove all metadata files, we will fetch everything again
 foreach (glob($metadataDirName . "/*.xml") as $f) {
-    unlink($f);
+//    unlink($f);
 }
 
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-idp-remote.json");
@@ -39,6 +44,8 @@ foreach ($data as $metadata) {
         continue;
     }
     $metadataUrl = $metadata['metadata-url'];
+    $metadataSet = $metadata['metadata-set'];
+
     try {
         $fileName = $metadataDirName . DIRECTORY_SEPARATOR . md5($metadataUrl) . ".xml";
         // FIXME: we SHOULD also use conditional download, by looking at Last-Modified and/or ETag header
@@ -47,11 +54,19 @@ foreach ($data as $metadata) {
             if (FALSE === @file_put_contents($fileName, $md)) {
                 throw new Exception("unable to write metadata to file");
             }
+            // write parsed metadata to array
         }
+        // parse the metadata and write to metadata json object
+        $set = "saml20-idp-remote" === $metadataSet ? "idp" : "sp";
+        $parsedMetadata[$metadataSet][$entityId] = MetadataParser::$set($fileName, $entityId);
     } catch (Exception $e) {
         //echo $entityId . PHP_EOL;
         //echo "\tWARNING: " . $e->getMessage() . PHP_EOL;
     }
+}
+
+if (FALSE === @file_put_contents($parsedMetadataFilename, json_encode($parsedMetadata))) {
+    throw new Exception("unable to write parsed metadata to file");
 }
 
 function fetchMetadata($metadataUrl)
@@ -62,8 +77,8 @@ function fetchMetadata($metadataUrl)
     ));
     $request = $client->get();
     $response = $request->send();
-    echo "    Last-Modified: " . $response->getLastModified() . PHP_EOL;
-    echo "    Etag         : " . $response->getEtag() . PHP_EOL;
+    //echo "    Last-Modified: " . $response->getLastModified() . PHP_EOL;
+    //echo "    Etag         : " . $response->getEtag() . PHP_EOL;
 
     return $response->getBody();
 }
