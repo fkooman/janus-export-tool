@@ -28,7 +28,7 @@ if (!is_dir($metadataDirName) && FALSE === @mkdir($metadataDirName, 0777, TRUE))
 
 // remove all metadata files, we will fetch everything again
 foreach (glob($metadataDirName . "/*.xml") as $f) {
-//    unlink($f);
+    unlink($f);
 }
 
 $jsonData = file_get_contents($dirName . DIRECTORY_SEPARATOR . "saml20-idp-remote.json");
