@@ -2,7 +2,7 @@
 require_once 'vendor/autoload.php';
 require_once 'MetadataParser.php';
 
-if(3 > $argc) {
+if (3 > $argc) {
     die("Syntax: <metadata URL> <entity ID>" . PHP_EOL);
 }
 

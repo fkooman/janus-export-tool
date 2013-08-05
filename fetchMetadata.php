@@ -46,6 +46,8 @@ foreach ($data as $metadata) {
     $metadataUrl = $metadata['metadata-url'];
     $metadataSet = $metadata['metadata-set'];
 
+    echo $metadataUrl . PHP_EOL;
+    
     try {
         $fileName = $metadataDirName . DIRECTORY_SEPARATOR . md5($metadataUrl) . ".xml";
         // FIXME: we SHOULD also use conditional download, by looking at Last-Modified and/or ETag header
@@ -77,8 +79,5 @@ function fetchMetadata($metadataUrl)
     ));
     $request = $client->get();
     $response = $request->send();
-    //echo "    Last-Modified: " . $response->getLastModified() . PHP_EOL;
-    //echo "    Etag         : " . $response->getEtag() . PHP_EOL;
-
     return $response->getBody();
 }

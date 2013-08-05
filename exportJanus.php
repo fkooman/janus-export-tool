@@ -700,7 +700,7 @@ function validateMetadataUrl(&$entities)
                 $metadataFile = @file_get_contents($metadataDirName . DIRECTORY_SEPARATOR . md5($mdu) . ".xml");
                 // FIXME: do not load the file twice!
                 if (FALSE === $metadataFile) {
-                    _l($metadata, "WARNING", "unable to fetch metadata from metadata URL");
+                    _l($metadata, "WARNING", sprintf("unable to fetch metadata from metadata URL '%s'", $mdu));
                     continue;
                 }
                 compareMetadata($metadata, $metadataDirName . DIRECTORY_SEPARATOR . md5($mdu) . ".xml");
